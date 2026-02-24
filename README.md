@@ -42,3 +42,17 @@ python -u simple_annotation_kpt/main.py review outputs/<name>
 - `Left click`: select point and drag to move
 - `Ctrl + Left click`: add point using current category and point id
 - `Right click`: delete nearest point
+
+## Annotation Guidelines
+
+![Annotation example 1](pic/naming1.png)
+![Annotation example 2](pic/naming2.png)
+
+Please follow these rules when annotating:
+
+- Tool tip: use `Category 2 - Point 1`.
+- Tool root/base: use `Category 2 - Point 2`.
+- Racket: use `Category 1`.
+- For the racket, label the four points from the top-left corner in counterclockwise order as `0, 1, 2, 3`.
+- The model may swap pairs `0/1` and `2/3`, so occasional swapped annotations are acceptable.
+- Cells: use `Category 3 - Point 1`, and multiple points are allowed.
