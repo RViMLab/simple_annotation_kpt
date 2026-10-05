@@ -42,7 +42,9 @@ def main() -> None:
 
         MatplotlibReviewer(args.scene_path)
     else:
-        parser.print_help()
+        from src.gui import run_gui
+
+        run_gui()
 
 
 if __name__ == "__main__":

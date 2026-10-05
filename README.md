@@ -15,6 +15,25 @@ For input `<name>`, outputs are written to:
 
 The JSON structure is kept compatible with `auto_annotation_pipeline`.
 
+## Desktop GUI (Windows)
+
+Run without arguments to open the folder picker:
+
+```powershell
+python E:\simple_annotation_kpt\main.py
+```
+
+Choose an input image folder (or video), an output root folder, and a frame step.
+The result directory is displayed as `<output root>/<input name>`.
+Click **Extract** first. **Start annotation** and **Open result folder** remain
+inactive until the result contains images and both valid annotation JSON files.
+Extraction runs in the background and the launcher displays its log.
+Existing result folders are protected against extraction overwriting annotations.
+To resume, select the same input and output root and click **Start annotation**.
+
+The Python environment needs `opencv-python`, `numpy`, `matplotlib`, and Tkinter.
+The command-line commands below remain available.
+
 ## Usage
 
 ### 1) Extract dataset (no AI)
@@ -40,7 +59,10 @@ python -u simple_annotation_kpt/main.py review outputs/<name>
 - `1-5`: set category
 - `Z/X/C/V`: set point id to `1/2/3/4`
 - `Left click`: select point and drag to move
-- `Ctrl + Left click`: add point using current category and point id
+- `Ctrl + Left click`: add point using current category and point id, then clear selection.
+- **Auto next keypoint** (enabled by default): after adding a point, keep the category
+  unchanged and advance point id `1 -> 2 -> 3 -> 4 -> 1`. Turn it off to add multiple
+  points with the same point id, such as cells.
 - `Right click`: delete nearest point
 
 ## Annotation Guidelines

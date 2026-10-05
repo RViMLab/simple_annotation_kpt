@@ -33,6 +33,7 @@ class MatplotlibReviewer:
         self.cur_pt_id = 1
         self.selected_pt_idx: Optional[int] = None
         self.dragging = False
+        self.auto_next_keypoint = True
         self.text_objects = []
 
         self.key_to_point_id = {"z": 1, "x": 2, "c": 3, "v": 4}
@@ -48,6 +49,12 @@ class MatplotlibReviewer:
 
         self.fig, self.ax = plt.subplots(figsize=(12, 9))
         self.fig.canvas.manager.set_window_title(f"Reviewer - {os.path.basename(scene_path)}")
+        from matplotlib.widgets import CheckButtons
+
+        self.fig.subplots_adjust(bottom=0.12)
+        toggle_ax = self.fig.add_axes([0.12, 0.015, 0.30, 0.065])
+        self.keypoint_toggle = CheckButtons(toggle_ax, ["Auto next keypoint"], [True])
+        self.keypoint_toggle.on_clicked(self._toggle_auto_keypoint)
         self.fig.canvas.mpl_connect("key_press_event", self.on_key)
         self.fig.canvas.mpl_connect("button_press_event", self.on_click)
         self.fig.canvas.mpl_connect("button_release_event", self.on_release)
@@ -60,6 +67,9 @@ class MatplotlibReviewer:
         self.render()
         self.print_controls()
         plt.show()
+
+    def _toggle_auto_keypoint(self, _label) -> None:
+        self.auto_next_keypoint = bool(self.keypoint_toggle.get_status()[0])
 
     def print_controls(self) -> None:
         print("\n=== Controls ===")
@@ -278,16 +288,21 @@ class MatplotlibReviewer:
             if self.idx < len(self.files) - 1:
                 self.idx += 1
                 self.selected_pt_idx = None
+                self.dragging = False
+                self.cur_pt_id = 1
                 self.render()
         elif event.key == "a":
             if self.idx > 0:
                 self.idx -= 1
                 self.selected_pt_idx = None
+                self.dragging = False
+                self.cur_pt_id = 1
                 self.render()
         elif event.key == "s":
             self.save()
         elif event.key in ["1", "2", "3", "4", "5"]:
             target_cat = int(event.key)
+            self.cur_cat = target_cat
             target_idx = self._resolve_target_index(event.xdata, event.ydata)
             if target_idx is not None:
                 self.frame_data[self.idx][target_idx]["category_id"] = target_cat
@@ -298,6 +313,7 @@ class MatplotlibReviewer:
             self.render()
         elif event.key in self.key_to_point_id:
             target_pt = self.key_to_point_id[event.key]
+            self.cur_pt_id = target_pt
             target_idx = self._resolve_target_index(event.xdata, event.ydata)
             if target_idx is not None:
                 self.frame_data[self.idx][target_idx]["point_id"] = target_pt
@@ -325,7 +341,7 @@ class MatplotlibReviewer:
         if event.button != 1:
             return
 
-        if event.key == "control":
+        if event.key in ("control", "ctrl", "ctrl+shift", "control+shift"):
             if event.xdata is None or event.ydata is None:
                 return
             points.append(
@@ -337,8 +353,11 @@ class MatplotlibReviewer:
                     "score": 1.0,
                 }
             )
-            self.selected_pt_idx = len(points) - 1
+            self.selected_pt_idx = None
+            self.dragging = False
             print(f"[Add] Cat={self.cur_cat}, Pt={self.cur_pt_id}")
+            if self.auto_next_keypoint:
+                self.cur_pt_id = self.cur_pt_id % 4 + 1
             self.render()
             return
 
